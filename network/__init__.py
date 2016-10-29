@@ -1,6 +1,7 @@
 from network.models import Process
 from network.receiver import Receiver
 from network.sender import Sender
+from network.serializator import serialize
 
 
 class Connection:
@@ -17,21 +18,23 @@ class Connection:
         self.sender = Sender(id, [Process(_id, _port) for _id, _port in zip(other_ids, other_ports)])
         self.receiver = Receiver(id, port, cb)
 
-    def send(self, recipient_id, message):
+    def send(self, recipient_id, message, time):
         """
         :param recipient_id: id of message recipient
         :param message: message to send
+        :param time: local Lamport clock time
         """
-        self.sender.send(recipient_id, message)
+        self.sender.send(recipient_id, serialize(message, self.id, time))
 
-    def broadcast(self, message):
+    def broadcast(self, message, time):
         """
         :param message: message to send to every other process
+        :param time: local Lamport clock time
         """
-        self.sender.broadcast(message)
+        self.sender.broadcast(serialize(message, self.id, time))
 
-    def kill(self):
+    def tear_down(self):
         """
         release socket
         """
-        self.receiver.kill()
+        self.receiver.tear_down()

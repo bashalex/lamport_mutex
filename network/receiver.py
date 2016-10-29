@@ -1,6 +1,7 @@
 from tornado import websocket, web, ioloop
 from threading import Thread
-import log
+from network.serializator import deserialize
+from logger import Logger
 
 
 class Receiver:
@@ -16,26 +17,26 @@ class Receiver:
             pass
 
         def on_message(self, message):
-            self.callback(message)
+            self.callback(deserialize(message))
 
         def on_close(self):
             pass
 
-    @staticmethod
-    def run_loop(app, port):
+    def run_loop(self, app, port):
         try:
             app.listen(port)
-            log.ok("socket created on port: {}".format(port))
+            self.logger.debug("socket created on port: {}".format(port))
         except PermissionError:
-            log.error("wrong port number")
+            self.logger.error("wrong port number")
         ioloop.IOLoop.instance().start()
 
-    def kill(self):
+    def tear_down(self):
         self.thread.join(1)
-        log.ok("socket released")
+        self.logger.debug("socket released")
 
     def __init__(self, id: int, port: int, cb):
         self.id = id
+        self.logger = Logger()
         self.app = web.Application([
             (r'/ws', self.SocketHandler, dict(cb=cb))
         ])
