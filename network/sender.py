@@ -6,9 +6,9 @@ from logger import Logger
 
 class Sender(object):
 
-    def __init__(self, id: int, others: List[Process]):
+    def __init__(self, id: int, others: List[Process], logger=None):
         self.id = id
-        self.logger = Logger()
+        self.logger = logger if logger is not None else Logger()
         self.ports = {}
         self.processes = {}
         for process in others:

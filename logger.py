@@ -31,9 +31,9 @@ class Logger:
         print(self.__WARNING, message, self.__END)
 
     def log(self, message: str, logic_time: int, real_time: int, pid: int):
-        l = "{}, {}, {}: {}\n".format(pid, logic_time, real_time, message)
+        l = "{}, {}, {}: {}".format(pid, logic_time, real_time, message)
         if self.out is None:
             print(self.__LOG, l, self.__END)
             return
         with open(self.out, "a") as f:
-            f.write(l)
+            f.write(l + "\n")

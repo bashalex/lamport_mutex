@@ -29,11 +29,11 @@ if __name__ == "__main__":
         id, port, ids, ports, mutex_path, debug = parser.parse_arguments(sys.argv, logger)
         logger = Logger(debug=debug, out='logs/{}.txt'.format(id))
         mutex = LamportMutex(path=mutex_path,
-                             logger=logger,
                              id=id,
                              port=port,
                              ids=ids,
-                             ports=ports)
+                             ports=ports,
+                             logger=logger)
     except ValueError:
         exit(0)
     print("You can use following commands:")

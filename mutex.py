@@ -1,6 +1,7 @@
 from requests import API
 from queue import PriorityQueue
 from time import time
+from logger import Logger
 import fcntl
 
 
@@ -13,7 +14,7 @@ class LamportMutex:
         self.__logger.debug('add {} request to the queue'.format((sender_time, sender)))
         self.__queue.put((sender_time, sender))
         self.__logger.debug('send confirmation to {}'.format(sender))
-        self.__api.confirm(sender)
+        self.api.confirm(sender)
 
     def __on_release(self, sender, sender_time):
         request = self.__queue.get()
@@ -22,21 +23,33 @@ class LamportMutex:
         else:
             self.__logger.debug('{} release mutex.'.format(sender))
 
-    def __init__(self, path, logger, id, port, ids, ports):
+    def __init__(self, path, id, port, ids, ports, logger=None):
+        """
+        :param path: path to the mutex file. for example mutex.txt
+        :param logger: instance of logger
+        :param id: self id
+        :param port: self port
+        :param ids: ids of other processes
+        :param ports: ports of other processes
+        """
         self.__path = path
-        self.__logger = logger
+        self.__logger = logger if logger is not None else Logger()
         self.__id = id
-        self.__api = API(id, port, ids, ports, self.__on_request, self.__on_release)
+        self.api = API(id, port, ids, ports, self.__on_request, self.__on_release, logger)
 
     def lock(self):
-        logic_time = self.__api.current_time()
+        """
+        unlock mutex
+        :return status whether mutex was locked
+        """
+        logic_time = self.api.current_time()
         self.__queue.put((logic_time, self.__id))  # add self request to the queue
         self.__logger.debug("put request into the queue")
         self.__logger.log("request", logic_time, time(), self.__id)
-        confirmation_time = self.__api.request(1)  # request confirmation
+        confirmation_time = self.api.request(1)  # request confirmation
         if confirmation_time == -1:
             self.__logger.error('timeout')
-            return
+            return False
         self.__logger.debug("all confirmations received")
         while 1:  # wait until the first request in queue is our
             with self.__queue.mutex:
@@ -45,8 +58,12 @@ class LamportMutex:
         self.__logger.debug("our request is first in the queue")
         # mutex is ready to use
         self.__acquire()
+        return True
 
     def unlock(self):
+        """
+        unlock mutex
+        """
         self.__queue.get()
         self.__release()
 
@@ -54,7 +71,7 @@ class LamportMutex:
         if self.__mutex is not None:
             self.__logger.error("attempt to acquire already acquired mutex")
             return
-        logic_time = self.__api.acquire()
+        logic_time = self.api.acquire()
         self.__mutex = open(self.__path, 'a')
         try:
             fcntl.flock(self.__mutex, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -68,13 +85,17 @@ class LamportMutex:
         if self.__mutex is None or self.__mutex.closed:
             self.__logger.error("attempt to release already released mutex")
             return
-        self.__logger.debug("send broadcast release")
-        logic_time = self.__api.release()
+        self.__logger.debug("release mutex")
+        logic_time = self.api.current_time() + 1  # releasing will be the next event
         self.__mutex.write("{} {} release\n".format(self.__id, logic_time))
         self.__mutex.close()
         self.__mutex = None
-        self.__logger.debug("release mutex")
         self.__logger.log("release", logic_time, time(), self.__id)
+        self.__logger.debug("send broadcast release")
+        self.api.release()
 
     def tear_down(self):
-        self.__api.tear_down()
+        """
+        release socket
+        """
+        self.api.tear_down()

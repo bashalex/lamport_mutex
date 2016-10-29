@@ -15,18 +15,18 @@ class API:
     __lock = RLock()
     # we use this lock to achieve consistency inside some functions
     # where we suppose logic time to be the same during the whole execution of function
-    __clock = 0  # lamport clock
+    clock = 0  # lamport clock
     __number_of_processes = 0  # exclude current
     __number_of_confirmations = 0
     __last_confirmation_time = 0
 
-    def __on_response(self, response):
+    def on_response(self, response):
         message, sender, sender_time = response
         self.__lock.acquire()
-        self.__clock = max(self.__clock, sender_time) + 1
+        self.clock = max(self.clock, sender_time) + 1
         if message == self.__CONFIRM:
             self.__number_of_confirmations += 1
-            self.__last_confirmation_time = self.__clock
+            self.__last_confirmation_time = self.clock
             self.__lock.release()
             return
         self.__lock.release()
@@ -35,7 +35,7 @@ class API:
         elif message == self.__RELEASE:
             self.on_release(sender, sender_time)
 
-    def __init__(self, id, port, ids, ports, on_request, on_release):
+    def __init__(self, id, port, ids, ports, on_request, on_release, logger=None):
         """
         :param id: self id
         :param port: self port
@@ -47,13 +47,13 @@ class API:
         self.__number_of_processes = len(ids)
         self.on_request = on_request
         self.on_release = on_release
-        self.connection = Connection(id, port, ids, ports, self.__on_response)
+        self.connection = Connection(id, port, ids, ports, self.on_response, logger)
 
     def current_time(self):
         """
         :return: current lamport clock time
         """
-        return self.__clock
+        return self.clock
 
     def request(self, timeout: int) -> int:
         """
@@ -63,10 +63,10 @@ class API:
         :return: -1 if timeout, otherwise time of the last confirmation
         """
         self.__lock.acquire()
-        self.__clock += 1
+        self.clock += 1
         self.__number_of_confirmations = 0
         self.__last_confirmation_time = 0
-        self.connection.broadcast(self.__REQUEST, self.__clock)
+        self.connection.broadcast(self.__REQUEST, self.clock)
         self.__lock.release()
         start = time()
         # await confirmations
@@ -81,8 +81,8 @@ class API:
         :param recipient_id: id of process which requires confirmation
         """
         self.__lock.acquire()
-        self.__clock += 1
-        self.connection.send(recipient_id, self.__CONFIRM, self.__clock)
+        self.clock += 1
+        self.connection.send(recipient_id, self.__CONFIRM, self.clock)
         self.__lock.release()
 
     def release(self):
@@ -92,9 +92,9 @@ class API:
         """
         self.__lock.acquire()
         try:
-            self.__clock += 1
-            self.connection.broadcast(self.__RELEASE, self.__clock)
-            return self.__clock
+            self.clock += 1
+            self.connection.broadcast(self.__RELEASE, self.clock)
+            return self.clock
         finally:
             self.__lock.release()
 
@@ -105,8 +105,8 @@ class API:
         """
         self.__lock.acquire()
         try:
-            self.__clock += 1
-            return self.__clock
+            self.clock += 1
+            return self.clock
         finally:
             self.__lock.release()
 

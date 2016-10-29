@@ -5,7 +5,7 @@ from network.serializator import serialize
 
 
 class Connection:
-    def __init__(self, id, port, other_ids, other_ports, cb):
+    def __init__(self, id, port, other_ids, other_ports, cb, logger=None):
         """
         :param id: process id
         :param port: socket port
@@ -15,8 +15,9 @@ class Connection:
         """
         self.id = id
         self.port = port
-        self.sender = Sender(id, [Process(_id, _port) for _id, _port in zip(other_ids, other_ports)])
-        self.receiver = Receiver(id, port, cb)
+        self.sender = Sender(id, [Process(_id, _port) for _id, _port in zip(other_ids, other_ports)],
+                             logger)
+        self.receiver = Receiver(id, port, cb, logger)
 
     def send(self, recipient_id, message, time):
         """
