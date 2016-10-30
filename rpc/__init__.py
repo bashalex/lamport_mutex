@@ -5,7 +5,17 @@ from time import time
 
 class API:
     """
-    class is not thread-safe. Can be used only in one thread.
+    Actually it is not pure RPC class.
+    At least normally RPC layer doesn't suppose incoming messages
+    that aren't answers for our outgoing requests.
+    It means that in our case we must have some callback for them anyway.
+    Moreover some of our requests don't suppose answer (e.g. 'release').
+    Therefore it makes sense to add feature like 'broadcast' to our connection.
+    It sends requests to all other processes in a row
+    and doesn't await answers immediately (like in pure RPC), but receive them in callback
+    in receipt order.
+    Anyway from the outside calls of the functions from this class looks exactly like RPC
+    because they return only after receiving response (if it's supposed to be there).
     """
     # constants
     __REQUEST = 0
@@ -57,7 +67,7 @@ class API:
 
     def request(self, timeout: int) -> int:
         """
-        send broadcast request with intention to enter critical section
+        send broadcast request with intention to acquire mutex
         returns when all confirmations received or after timeout
         :param timeout: max await time in seconds
         :return: -1 if timeout, otherwise time of the last confirmation
@@ -87,7 +97,7 @@ class API:
 
     def release(self):
         """
-        send broadcast request to notify exit from critical section
+        send broadcast request to notify release of mutex
         :return logic time of event
         """
         self.__lock.acquire()
@@ -100,7 +110,7 @@ class API:
 
     def acquire(self):
         """
-        actually it isn't rpc, but we call it to increment clock
+        actually it isn't remote call, but we execute it to increment clock
         :return logic time of event
         """
         self.__lock.acquire()

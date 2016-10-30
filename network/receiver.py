@@ -30,6 +30,8 @@ class Receiver:
             self.logger.debug("socket created on port: {}".format(port))
         except PermissionError:
             self.logger.error("wrong port number")
+        except OSError:
+            self.logger.error("port already in use")
         self.logger.debug("run loop: IOLoop: {}".format(ioloop.IOLoop.current()))
         # init and make thread IOLoop 'current' to be able to stop it from the main thread
         ioloop.IOLoop.instance().make_current()
