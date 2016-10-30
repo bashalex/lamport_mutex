@@ -37,7 +37,7 @@ class Receiver:
     def tear_down(self):
         self.logger.debug("tear down: IOLoop: {}".format(ioloop.IOLoop.current()))
         ioloop.IOLoop.current().stop()
-        self.thread.join(0)
+        self.thread.join(1)
         self.logger.debug("socket released")
 
     def __init__(self, id: int, port: int, cb, logger=None):

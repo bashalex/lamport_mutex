@@ -1,14 +1,15 @@
 
 def parse_arguments(args, logger):
-    if len(args) != 7:
-        logger.error("Run with 6 arguments:")
+    if len(args) != 8:
+        logger.error("Run with 7 arguments:")
         logger.error("\t- id (int)" +
                      "\n\t- port (int)" +
                      "\n\t- list of other ids" +
                      "\n\t- list of other ports" +
                      "\n\t- path to mutex file" +
-                     "\n\t- debug (boolean)")
-        logger.error('for example: main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false')
+                     "\n\t- debug (boolean)" +
+                     "\n\t- daemon (boolean)")
+        logger.error('for example: main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false false')
         raise ValueError
     try:
         id, port = int(args[1]), int(args[2])
@@ -42,4 +43,12 @@ def parse_arguments(args, logger):
     else:
         logger.error("6 argument must be boolean")
         raise ValueError
-    return id, port, ids, ports, mutex_path, debug
+    daemon = args[7].lower()
+    if daemon == 'false':
+        daemon = False
+    elif daemon == 'true':
+        daemon = True
+    else:
+        logger.error("7 argument must be boolean")
+        raise ValueError
+    return id, port, ids, ports, mutex_path, debug, daemon

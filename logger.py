@@ -21,14 +21,22 @@ class Logger:
             self.warn('debug mode enabled')
 
     def error(self, message: str):
-        print(self.__ERROR, message, self.__END)
+        if self.out is None:
+            print(self.__ERROR, message, self.__END)
+        else:
+            with open(self.out, "a") as f:
+                f.write("error: " + message + "\n")
 
     def debug(self, message: str):
         if self.debug_mode:
             print(self.__DEBUG, message, self.__END)
 
     def warn(self, message: str):
-        print(self.__WARNING, message, self.__END)
+        if self.out is None:
+            print(self.__WARNING, message, self.__END)
+        else:
+            with open(self.out, "a") as f:
+                f.write("warning: " + message + "\n")
 
     def log(self, message: str, logic_time: int, real_time: int, pid: int):
         l = "{}, {}, {}: {}".format(pid, logic_time, real_time, message)
