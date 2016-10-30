@@ -1,10 +1,11 @@
 #!/usr/bin/python3.5
-from process_daemon import DaemonProcess
-from logger import Logger
+import sys
 from os import listdir
 from os.path import isfile, join
+
 import settings
-import sys
+from utils.logger import Logger
+from utils.process_daemon import DaemonProcess
 
 
 def kill_daemon(pid):

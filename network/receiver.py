@@ -1,7 +1,9 @@
-from tornado import websocket, web, ioloop
 from threading import Thread
+
+from tornado import websocket, web, ioloop
+
 from network.serializator import deserialize
-from logger import Logger
+from utils.logger import Logger
 
 
 class Receiver:

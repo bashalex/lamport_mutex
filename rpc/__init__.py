@@ -100,7 +100,7 @@ class API:
 
     def acquire(self):
         """
-        actually it isn't RPC, but we call it to increment clock
+        actually it isn't rpc, but we call it to increment clock
         :return logic time of event
         """
         self.__lock.acquire()

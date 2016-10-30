@@ -1,9 +1,10 @@
-from unittest import TestCase
-from threading import Thread
-from mutex import LamportMutex
-from logger import Logger
-from time import time, sleep
 import fcntl
+from threading import Thread
+from time import time, sleep
+from unittest import TestCase
+
+from mutex import LamportMutex
+from utils.logger import Logger
 
 
 class MockConnection:
@@ -60,7 +61,7 @@ class TestLamportMutex(TestCase):
     """
 
     def setUp(self):
-        self.mutex_path = 'mutex.txt'
+        self.mutex_path = '../mutex.txt'
         self.logger = Logger(debug=False)
         self.other_ids = [i for i in range(1, 10)]
         self.other_ports = [8100 + i for i in range(1, 10)]

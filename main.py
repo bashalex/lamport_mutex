@@ -1,10 +1,11 @@
 #!/usr/bin/python3.5
-from mutex import LamportMutex
-from process_daemon import DaemonProcess
-from logger import Logger
-import settings
-import parser
 import sys
+
+import settings
+from mutex import LamportMutex
+from utils import parser
+from utils.logger import Logger
+from utils.process_daemon import DaemonProcess
 
 
 def run_command(command):

@@ -1,7 +1,9 @@
-from websocket import create_connection
 from typing import List
+
+from websocket import create_connection
+
 from network.models import Process
-from logger import Logger
+from utils.logger import Logger
 
 
 class Sender(object):

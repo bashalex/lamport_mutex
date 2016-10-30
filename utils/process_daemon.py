@@ -1,6 +1,6 @@
 from signal import signal, SIGUSR1, SIGUSR2
 from mutex import LamportMutex
-from daemon import Daemon
+from utils.daemon import Daemon
 import sys
 import os
 

@@ -1,7 +1,7 @@
-from requests import API
 from queue import PriorityQueue
+from utils.logger import Logger
 from time import time
-from logger import Logger
+from rpc import API
 import fcntl
 
 
