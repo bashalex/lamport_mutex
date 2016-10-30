@@ -1,4 +1,10 @@
 # Lamport Mutex #
+
+### settings.py ###
+Contains paths to the directories.
+These directories must exist!
+
+**Default:** ```./pids``` for daemons pids and ```./logs``` for logs
 ## Scripts: ##
 ### main.py: ###
 _Spawn new process in one of two modes: interactive or daemon_

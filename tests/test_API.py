@@ -69,12 +69,12 @@ class TestAPI(TestCase):
         self.other_ports = [8100 + i for i in range(1, 10)]
 
         self.mutex = LamportMutex(self.mutex_path, 0, 8000,
-                             self.other_ids, self.other_ports, self.logger)
+                                  self.other_ids, self.other_ports, self.logger)
         self.mutex.tear_down()  # kill real connection
 
         # mock connection
         self.mock_connection = MockConnection(0, 8000, self.other_ids,
-                                         self.other_ports, self.mutex.api.on_response)
+                                              self.other_ports, self.mutex.api.on_response)
         self.mutex.api.connection = self.mock_connection
 
     def test__API_with_correct_answers(self):
