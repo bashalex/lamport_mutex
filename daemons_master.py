@@ -8,23 +8,35 @@ from utils.logger import Logger
 from utils.process_daemon import DaemonProcess
 
 
-def kill_daemon(pid):
-    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, pid))
-    print('kill daemon {}'.format(pid))
+def kill_daemon(_pid):
+    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, _pid))
+    print('kill daemon {}'.format(_pid))
     daemon.stop()
 
 
-def process_lock_mutex(pid):
-    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, pid))
+def process_lock_mutex(_pid):
+    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, _pid))
     daemon.lock()
 
 
-def process_unlock_mutex(pid):
-    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, pid))
+def process_unlock_mutex(_pid):
+    daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, _pid))
     daemon.unlock()
 
 
 if __name__ == "__main__":
+    """
+    Allow to control spawned daemons
+    Arguments:
+        - command (kill | lock | unlock)
+        - pid (int or 'all')
+    Example 1: kill all daemons
+        ./daemon_master.py kill all
+    Example 2: Make process with id = 1 lock mutex
+        ./daemon_master.py lock 1
+    Example 3: Make process with id = 0 unlock mutex
+        ./daemon_master.py unlock 0
+    """
     logger = Logger()
     if len(sys.argv) != 3:
         logger.error("Run with 2 arguments:")
@@ -38,6 +50,7 @@ if __name__ == "__main__":
         if sys.argv[1] == 'kill' and 'all' == sys.argv[2]:
             pid = -1
         else:
+            pid = None
             exit(0)
     if 'kill' == sys.argv[1]:
         if pid == -1:
@@ -59,4 +72,3 @@ if __name__ == "__main__":
                          "\n\t- pid (int or 'all')")
             logger.error('for example: ./daemons_master.py kill 0')
             exit(0)
-

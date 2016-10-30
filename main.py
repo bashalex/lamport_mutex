@@ -37,6 +37,19 @@ def run_interactive_app():
 
 
 if __name__ == "__main__":
+    """
+    Spawn new process in one of two modes: interactive or daemon
+    Arguments:
+        - id (int) - id of new process
+        - port (int) - port for socket
+        - list of other ids
+        - list of other ports
+        - path to mutex file
+        - debug (boolean)
+        - daemon (boolean)
+    Example:
+        ./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true
+    """
     logger = Logger()
     try:
         id, port, ids, ports, mutex_path, debug, daemon = parser.parse_arguments(sys.argv, logger)
