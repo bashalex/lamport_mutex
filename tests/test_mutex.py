@@ -32,7 +32,7 @@ class MockAPI:
         self.clock += 1
         return self.clock
 
-    def acquire(self):
+    def increment_clock(self):
         # increment clock and return
         self.clock += 1
         return self.clock

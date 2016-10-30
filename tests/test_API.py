@@ -29,28 +29,24 @@ class MockConnection:
     def send(self, recipient_id, message, time, request_id=-1):
         # used only for confirmations
         # do not await answer here
-        pass
-
-    def broadcast(self, message, time):
         if message != self.__REQUEST:
             # do not await any responses
             return
         if self.state == self.CORRECT_NUM_OF_CONFIRMATIONS:
-            # await len(self.other_ids) number of confirmations
-            for _id in self.other_ids:
-                self.cb((self.__CONFIRM, _id, 0, 123))  # last argument is logic time. don't care about it here
+            # await confirmations
+            self.cb((self.__CONFIRM, recipient_id, 0, request_id))
         elif self.state == self.WRONG_NUM_OF_CONFIRMATIONS:
-            if len(self.other_ids) > 1:
-                self.cb((self.__CONFIRM, self.other_ids[0], 0, 123))
+            if recipient_id % 2 == 0:  # send only half of confirmations
+                self.cb((self.__CONFIRM, recipient_id, 0, request_id))
         elif self.state == self.NO_CONFIRMATIONS:
             pass
 
     def simulate_request_from_other_process(self, other_time):
-        self.cb((self.__REQUEST, self.other_ids[0], other_time, 123))
+        self.cb((self.__REQUEST, self.other_ids[0], other_time, -1))
 
     def simulate_release_from_other_process(self, other_time, after):
         sleep(after)
-        self.cb((self.__RELEASE, self.other_ids[0], other_time, 123))
+        self.cb((self.__RELEASE, self.other_ids[0], other_time, -1))
 
     def tear_down(self):
         pass
