@@ -8,6 +8,14 @@ from utils.logger import Logger
 from utils.process_daemon import DaemonProcess
 
 
+def kill_all():
+    pids = [f for f in listdir(settings.pids_path) if isfile(join(settings.pids_path, f))]
+    pids = [_pid[:-4] for _pid in pids if _pid[-4:] == '.pid']
+    if len(pids) == 0:
+        print('No alive daemons :(')
+    [kill_daemon(_pid) for _pid in pids]
+
+
 def kill_daemon(_pid):
     daemon = DaemonProcess("{}/{}.pid".format(settings.pids_path, _pid))
     print('kill daemon {}'.format(_pid))
@@ -54,11 +62,7 @@ if __name__ == "__main__":
             exit(0)
     if 'kill' == sys.argv[1]:
         if pid == -1:
-            pids = [f for f in listdir(settings.pids_path) if isfile(join(settings.pids_path, f))]
-            pids = [pid[:-4] for pid in pids if pid[-4:] == '.pid']
-            if len(pids) == 0:
-                print('No alive daemons :(')
-            [kill_daemon(pid) for pid in pids]
+            kill_all()
         else:
             kill_daemon(pid)
     elif 'lock' == sys.argv[1]:

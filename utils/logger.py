@@ -3,6 +3,7 @@ class Logger:
 
     __DEBUG = '\033[92mdebug:'
     __WARNING = '\033[93mwarning:'
+    __OK = '\033[96mOK:'
     __ERROR = '\033[91merror:'
     __LOG = '\033[94mlog:'
     __END = '\033[0m'
@@ -21,9 +22,9 @@ class Logger:
             self.warn('debug mode enabled')
 
     def error(self, message: str):
-        if self.out is None:
+        if self.out is None or self.debug_mode:
             print(self.__ERROR, message, self.__END)
-        else:
+        if self.out is not None:
             with open(self.out, "a") as f:
                 f.write("error: " + message + "\n")
 
@@ -32,9 +33,9 @@ class Logger:
             print(self.__DEBUG, message, self.__END)
 
     def warn(self, message: str):
-        if self.out is None:
+        if self.out is None or self.debug_mode:
             print(self.__WARNING, message, self.__END)
-        else:
+        if self.out is not None:
             with open(self.out, "a") as f:
                 f.write("warning: " + message + "\n")
 
@@ -45,3 +46,10 @@ class Logger:
             return
         with open(self.out, "a") as f:
             f.write(l + "\n")
+
+    def ok(self, message: str):
+        if self.out is None:
+            print(self.__OK, message, self.__END)
+            return
+        with open(self.out, "a") as f:
+            f.write(message + "\n")

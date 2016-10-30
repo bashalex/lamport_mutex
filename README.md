@@ -17,8 +17,9 @@ _Spawn new process in one of two modes: interactive or daemon_
   * path to mutex file
   * debug (boolean)
   * daemon (boolean)
+  * stress_mode (boolean)
 
-**Example:** ```./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true```
+**Example:** ```./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true false```
 
 ### daemons_master.py: ###
 _Allow to control spawned daemons_

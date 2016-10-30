@@ -25,15 +25,20 @@ class Sender(object):
         if recipient is None:
             recipient = self.__open_socket(recipient_id)
         if not recipient:
-            return False
+            return -1
         try:
             recipient.send(message)
         except BrokenPipeError:
             recipient = self.__open_socket(recipient_id)
             if not recipient:
-                return False
-            recipient.send(message)
-        return True
+                return -1
+            try:
+                recipient.send(message)
+            except ConnectionResetError:
+                return -2
+        except ConnectionResetError:
+            return -2
+        return 0
 
     def __open_socket(self, recipient_id):
         try:
@@ -48,5 +53,3 @@ class Sender(object):
         self.processes[recipient_id] = recipient
         return recipient
 
-    def broadcast(self, message: str):
-        [self.send(recipient_id, message) for recipient_id in self.processes.keys()]

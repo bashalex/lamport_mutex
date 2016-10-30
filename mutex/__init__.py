@@ -10,18 +10,31 @@ class LamportMutex:
     __queue = PriorityQueue()
     __mutex = None
 
-    def __on_request(self, sender, sender_time):
+    def __on_request(self, sender, sender_time, request_id):
+        # self.__logger.log('I confirm', sender_time, time(), sender)
         self.__logger.debug('add {} request to the queue'.format((sender_time, sender)))
         self.__queue.put((sender_time, sender))
         self.__logger.debug('send confirmation to {}'.format(sender))
-        self.api.confirm(sender)
+        self.api.confirm(sender, request_id)
+
+    def __remove_request_from_queue(self, sender):
+        """
+        it isn't very efficient but who cares
+        """
+        with self.__queue.mutex:
+            for x in self.__queue.queue:
+                if x[1] == sender:
+                    self.__queue.queue.remove(x)
+                    return True
+        return False
 
     def __on_release(self, sender, sender_time):
-        request = self.__queue.get()
-        if request[0] != sender_time and request[1] != sender:
-            self.__logger.error('{} released mutex, but last request in the queue is {}'.format(sender, request))
-        else:
-            self.__logger.debug('{} release mutex.'.format(sender))
+        if not self.__remove_request_from_queue(sender):
+            self.__logger.error("release from {} but there is no request from it in the queue"
+                                .format(sender))
+            return
+        self.__logger.log('release', sender_time, time(), sender)
+        self.__logger.debug('{} release mutex.'.format(sender))
 
     def __init__(self, path, id, port, ids, ports, logger=None):
         """
@@ -46,11 +59,13 @@ class LamportMutex:
         self.__queue.put((logic_time, self.__id))  # add self request to the queue
         self.__logger.debug("put request into the queue")
         self.__logger.log("request", logic_time, time(), self.__id)
-        confirmation_time = self.api.request(1)  # request confirmation
+        confirmation_time = self.api.request(timeout=1)  # request confirmation
         if confirmation_time == -1:
             self.__logger.error('timeout')
+            self.__logger.debug("remove request from the queue")
+            self.__queue.get()
             return False
-        self.__logger.debug("all confirmations received")
+        self.__logger.warn("all confirmations received")
         while 1:  # wait until the first request in queue is our
             with self.__queue.mutex:
                 if self.__queue.queue[0][1] == self.__id:
@@ -68,10 +83,12 @@ class LamportMutex:
         self.__release()
 
     def __acquire(self):
+        self.__logger.debug("__acquire mutex start")
         if self.__mutex is not None:
             self.__logger.error("attempt to acquire already acquired mutex")
             return
-        logic_time = self.api.acquire()
+        # increment clock, because 'acquire mutex' it is event itself
+        logic_time = self.api.increment_clock()
         self.__mutex = open(self.__path, 'a')
         try:
             fcntl.flock(self.__mutex, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -86,7 +103,8 @@ class LamportMutex:
             self.__logger.error("attempt to release already released mutex")
             return
         self.__logger.debug("release mutex")
-        logic_time = self.api.current_time() + 1  # releasing will be the next event
+        # increment clock, because 'release mutex' it is event itself
+        logic_time = self.api.increment_clock()
         self.__mutex.write("{} {} release\n".format(self.__id, logic_time))
         self.__mutex.close()
         self.__mutex = None
@@ -98,4 +116,6 @@ class LamportMutex:
         """
         release socket
         """
+        if self.__mutex is not None and not self.__mutex.closed:
+            self.__release()
         self.api.tear_down()

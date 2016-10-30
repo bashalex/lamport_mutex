@@ -9,7 +9,7 @@ class DaemonProcess(Daemon):
     mutex = None
 
     def __init__(self, pidfile, path=None, id=None, port=None,
-                 ids=None, ports=None, logger=None, debug=False):
+                 ids=None, ports=None, logger=None, debug=False, stress_mode=False):
         """
         :param path: path to the mutex file. for example mutex.txt
         :param logger: instance of logger
@@ -17,6 +17,7 @@ class DaemonProcess(Daemon):
         :param port: self port
         :param ids: ids of other processes
         :param ports: ports of other processes
+        :param stress_mode: in stress mode process acquires and releases mutex in loop while alive
         """
         self.id = id
         self.mutex_path = path
@@ -24,6 +25,7 @@ class DaemonProcess(Daemon):
         self.ids = ids
         self.ports = ports
         self.logger = logger
+        self.stress_mode = stress_mode
         signal(SIGUSR1, self.__lock)
         signal(SIGUSR2, self.__unlock)
         super().__init__(pidfile, debug)
@@ -39,6 +41,17 @@ class DaemonProcess(Daemon):
                                   ids=self.ids,
                                   ports=self.ports,
                                   logger=self.logger)
+        if self.stress_mode:
+            self.run_stress_mode()
+
+    def run_stress_mode(self):
+        self.logger.warn("{} wait other processes...".format(self.id))
+        while not self.mutex.api.ping_all():
+            continue
+        self.logger.warn("{} run stress mode".format(self.id))
+        while 1:
+            if self.__lock(None, None):
+                self.__unlock(None, None)
 
     def get_pid(self):
         try:
@@ -70,7 +83,7 @@ class DaemonProcess(Daemon):
         os.kill(pid, SIGUSR2)
 
     def __lock(self, signum, frame):
-        self.mutex.lock()
+        return self.mutex.lock()
 
     def __unlock(self, signum, frame):
         self.mutex.unlock()

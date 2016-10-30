@@ -3,6 +3,7 @@ import sys
 
 import settings
 from mutex import LamportMutex
+from time import sleep
 from utils import parser
 from utils.logger import Logger
 from utils.process_daemon import DaemonProcess
@@ -36,6 +37,19 @@ def run_interactive_app():
             exit_program()
 
 
+def run_stress_mode():
+    logger.warn("wait other processes...")
+    while not mutex.api.ping_all():
+        continue
+    logger.warn("run stress mode")
+    while 1:
+        try:
+            if mutex.lock():
+                mutex.unlock()
+        except KeyboardInterrupt:
+            exit_program()
+
+
 if __name__ == "__main__":
     """
     Spawn new process in one of two modes: interactive or daemon
@@ -47,13 +61,15 @@ if __name__ == "__main__":
         - path to mutex file
         - debug (boolean)
         - daemon (boolean)
+        - stress_mode (boolean)
     Example:
-        ./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true
+        ./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true false
     """
     logger = Logger()
     try:
-        id, port, ids, ports, mutex_path, debug, daemon = parser.parse_arguments(sys.argv, logger)
-        logger = Logger(debug=debug, out='{}/{}.txt'.format(settings.logs_path, id))
+        id, port, ids, ports, mutex_path, debug, daemon, stress_mode =\
+                                            parser.parse_arguments(sys.argv, logger)
+        logger = Logger(debug=debug, out='{}/{}.log'.format(settings.logs_path, id))
         if daemon:
             daemon = DaemonProcess(pidfile="{}/{}.pid".format(settings.pids_path, id),
                                    path=mutex_path,
@@ -62,7 +78,8 @@ if __name__ == "__main__":
                                    ids=ids,
                                    ports=ports,
                                    logger=logger,
-                                   debug=debug)
+                                   debug=debug,
+                                   stress_mode=stress_mode)
             daemon.start()
         else:
             mutex = LamportMutex(path=mutex_path,
@@ -71,6 +88,10 @@ if __name__ == "__main__":
                                  ids=ids,
                                  ports=ports,
                                  logger=logger)
-            run_interactive_app()
+            sleep(1)  # sleep for a while because socket doesn't open immediately
+            if stress_mode:
+                run_stress_mode()
+            else:
+                run_interactive_app()
     except ValueError:
         exit(0)

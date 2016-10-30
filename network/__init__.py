@@ -19,20 +19,18 @@ class Connection:
                              logger)
         self.receiver = Receiver(id, port, cb, logger)
 
-    def send(self, recipient_id, message, time):
+    def send(self, recipient_id, message, time, request_id=-1):
         """
         :param recipient_id: id of message recipient
         :param message: message to send
         :param time: local Lamport clock time
+        :param request_id:
+                1. if message is request that awaits answer
+                           :param request_id contains unique id of this request
+                2. if message is response (actually 'confirmation' in our case)
+                           :param request_id contains id of incoming request.
         """
-        self.sender.send(recipient_id, serialize(message, self.id, time))
-
-    def broadcast(self, message, time):
-        """
-        :param message: message to send to every other process
-        :param time: local Lamport clock time
-        """
-        self.sender.broadcast(serialize(message, self.id, time))
+        self.sender.send(recipient_id, serialize(message, self.id, time, request_id))
 
     def tear_down(self):
         """

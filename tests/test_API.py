@@ -26,7 +26,7 @@ class MockConnection:
         self.cb = cb
         self.other_ids = other_ids
 
-    def send(self, recipient_id, message, time):
+    def send(self, recipient_id, message, time, request_id=-1):
         # used only for confirmations
         # do not await answer here
         pass
@@ -38,19 +38,19 @@ class MockConnection:
         if self.state == self.CORRECT_NUM_OF_CONFIRMATIONS:
             # await len(self.other_ids) number of confirmations
             for _id in self.other_ids:
-                self.cb((self.__CONFIRM, _id, 0))  # last argument is logic time. don't care about it here
+                self.cb((self.__CONFIRM, _id, 0, 123))  # last argument is logic time. don't care about it here
         elif self.state == self.WRONG_NUM_OF_CONFIRMATIONS:
             if len(self.other_ids) > 1:
-                self.cb((self.__CONFIRM, self.other_ids[0], 0))
+                self.cb((self.__CONFIRM, self.other_ids[0], 0, 123))
         elif self.state == self.NO_CONFIRMATIONS:
             pass
 
     def simulate_request_from_other_process(self, other_time):
-        self.cb((self.__REQUEST, self.other_ids[0], other_time))
+        self.cb((self.__REQUEST, self.other_ids[0], other_time, 123))
 
     def simulate_release_from_other_process(self, other_time, after):
         sleep(after)
-        self.cb((self.__RELEASE, self.other_ids[0], other_time))
+        self.cb((self.__RELEASE, self.other_ids[0], other_time, 123))
 
     def tear_down(self):
         pass
@@ -136,14 +136,14 @@ class TestAPI(TestCase):
         self.mock_connection.simulate_request_from_other_process(-1)  # earlier than our time
 
         # simulate release after 1.5s
-        delay = 1.5
-        thread = Thread(target=self.mock_connection.simulate_release_from_other_process, args=(1, delay))
+        delay = 2
+        thread = Thread(target=self.mock_connection.simulate_release_from_other_process, args=(2, delay))
         thread.start()
 
         start = time()
         self.mutex.lock()
 
-        # locked only after ~1.5s => OK
+        # locked only after ~2s => OK
         self.assertGreaterEqual(time(), start + delay)
 
         self.mutex.unlock()
