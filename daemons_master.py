@@ -31,11 +31,11 @@ if __name__ == "__main__":
         - command (kill | lock | unlock)
         - pid (int or 'all')
     Example 1: kill all daemons
-        ./daemon_master.py kill all
+        ./daemons_master.py kill all
     Example 2: Make process with id = 1 lock mutex
-        ./daemon_master.py lock 1
+        ./daemons_master.py lock 1
     Example 3: Make process with id = 0 unlock mutex
-        ./daemon_master.py unlock 0
+        ./daemons_master.py unlock 0
     """
     logger = Logger()
     if len(sys.argv) != 3:
