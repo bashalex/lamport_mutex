@@ -39,3 +39,11 @@ _Allow to control spawned daemons_
 **Example 3:** Make process with ```id = 0``` unlock mutex
 
 ```./daemons_master.py unlock 0```
+
+### log_checker.py: ###
+
+Run without arguments.
+Check correctness of logs
+
+## Tests ##
+**run tests:** ```python3 -W ignore -m unittest tests/test_API.py tests/test_mutex.py```

@@ -1,5 +1,5 @@
 import fcntl
-from unittest import TestCase
+from unittest import TestCase, main
 from mutex import LamportMutex
 from utils.logger import Logger
 
@@ -42,13 +42,10 @@ class MockAPI:
 
 
 class TestMutex(TestCase):
-    """
-    Don't really care about logger error messages during tests
-    """
 
     def setUp(self):
         self.mutex_path = '../mutex.txt'
-        self.logger = Logger(debug=False)
+        self.logger = Logger(off=True)
         self.other_ids = [i for i in range(1, 10)]
         self.other_ports = [8100 + i for i in range(1, 10)]
 

@@ -8,8 +8,9 @@ class Logger:
     __LOG = '\033[94mlog:'
     __END = '\033[0m'
 
-    def __init__(self, out=None, debug=False):
+    def __init__(self, out=None, debug=False, off=False):
         self.out = out
+        self.off = off
         if out is not None:
             try:
                 with open(out, 'w') as f:
@@ -22,6 +23,8 @@ class Logger:
             self.warn('debug mode enabled')
 
     def error(self, message: str):
+        if self.off:
+            return
         if self.out is None or self.debug_mode:
             print(self.__ERROR, message, self.__END)
         if self.out is not None:
@@ -29,10 +32,14 @@ class Logger:
                 f.write("error: " + message + "\n")
 
     def debug(self, message: str):
+        if self.off:
+            return
         if self.debug_mode:
             print(self.__DEBUG, message, self.__END)
 
     def warn(self, message: str):
+        if self.off:
+            return
         if self.out is None or self.debug_mode:
             print(self.__WARNING, message, self.__END)
         if self.out is not None:
@@ -40,6 +47,8 @@ class Logger:
                 f.write("warning: " + message + "\n")
 
     def log(self, message: str, logic_time: int, real_time: int, pid: int):
+        if self.off:
+            return
         l = "{}, {}, {}: {}".format(pid, logic_time, real_time, message)
         if self.out is None:
             print(self.__LOG, l, self.__END)
@@ -48,6 +57,8 @@ class Logger:
             f.write(l + "\n")
 
     def ok(self, message: str):
+        if self.off:
+            return
         if self.out is None:
             print(self.__OK, message, self.__END)
             return
