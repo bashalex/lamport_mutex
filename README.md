@@ -1,8 +1,8 @@
 # Lamport Mutex #
 
 ### settings.py ###
-Contains paths to the directories.
-These directories must exist!
+_Contains paths to the directories.
+These directories must exist!_
 
 **Default:** ```./pids``` for daemons pids and ```./logs``` for logs
 ## Scripts: ##
@@ -40,10 +40,23 @@ _Allow to control spawned daemons_
 
 ```./daemons_master.py unlock 0```
 
+### stress_test.py: ###
+_Run stress test with ```n``` processes for ```s``` seconds_
+
+_A lot of logger errors in the beginning of the test it's ok._
+_They happens while not all of processes are spawned_
+
+**Arguments:**
+  * n (int) - number of processes
+  * s (int) - time of execution
+
+**Example:** ```./stress_test.py 10 15```
+
+
 ### log_checker.py: ###
 
-Run without arguments.
-Check correctness of logs
+_Run without arguments.
+Check correctness of logs_
 
 ## Tests ##
-**run tests:** ```python3 -W ignore -m unittest tests/test_API.py tests/test_mutex.py```
+**run unit tests:** ```python3 -W ignore -m unittest tests/test_API.py tests/test_mutex.py```
