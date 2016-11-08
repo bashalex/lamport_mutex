@@ -83,6 +83,9 @@ class LamportMutex:
         """
         unlock mutex
         """
+        if self.__mutex is None or self.__mutex.closed:
+            self.__logger.error("attempt to unlock already released mutex")
+            return
         self.__queue.get()
         self.__release()
 
@@ -103,9 +106,6 @@ class LamportMutex:
         self.__logger.log("acquire", logic_time, time(), self.__id)
 
     def __release(self):
-        if self.__mutex is None or self.__mutex.closed:
-            self.__logger.error("attempt to release already released mutex")
-            return
         self.__logger.debug("release mutex")
         # increment clock, because 'release mutex' it is event itself
         logic_time = self.api.increment_clock()

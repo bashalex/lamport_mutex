@@ -1,6 +1,6 @@
 from threading import Thread
 from time import time, sleep
-from unittest import TestCase, main
+from unittest import TestCase
 from mutex import LamportMutex
 from utils.logger import Logger
 
