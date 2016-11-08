@@ -55,16 +55,20 @@ class LamportMutex:
         unlock mutex
         :return status whether mutex was locked
         """
+        if self.__mutex is not None:
+            self.__logger.error("attempt to lock already locked mutex")
+            return False
         logic_time = self.api.current_time()
         self.__queue.put((logic_time, self.__id))  # add self request to the queue
         self.__logger.debug("put request into the queue")
         self.__logger.log("request", logic_time, time(), self.__id)
-        confirmation_time = self.api.request(timeout=1)  # request confirmation
-        if confirmation_time == -1:
-            self.__logger.error('timeout')
-            self.__logger.debug("remove request from the queue")
-            self.__queue.get()
-            return False
+        self.api.request()
+        # confirmation_time = self.api.request(timeout=1)  # request confirmation
+        # if confirmation_time == -1:
+        #     self.__logger.error('timeout')
+        #     self.__logger.debug("remove request from the queue")
+        #     self.__queue.get()
+        #     return False
         self.__logger.warn("all confirmations received")
         while 1:  # wait until the first request in queue is our
             with self.__queue.mutex:

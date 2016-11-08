@@ -52,4 +52,3 @@ class Sender(object):
             return False
         self.processes[recipient_id] = recipient
         return recipient
-

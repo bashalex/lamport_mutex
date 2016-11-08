@@ -38,7 +38,7 @@ class API:
         self.clock = max(self.clock, sender_time) + 1
         if message == self.__CONFIRM:
             if request_id != self.__last_request_id:
-                # probably it's delayed confirmation for previous request
+                # probably it's delayed confirmation for previous PING request
                 # that finished with timeout
                 # ignore it
                 return
@@ -76,11 +76,10 @@ class API:
         """
         return self.clock
 
-    def request(self, timeout: int) -> int:
+    def request(self) -> int:
         """
         send broadcast request with intention to acquire mutex
         returns when all confirmations received or after timeout
-        :param timeout: max await time in seconds
         :return: -1 if timeout, otherwise time of the last confirmation
         """
         self.__lock.acquire()
@@ -93,9 +92,11 @@ class API:
         self.__lock.release()
         start = time()
         # await confirmations
+        timeout = False
         while self.__number_of_confirmations != self.__number_of_processes:
-            if time() - start >= timeout:
-                return -1
+            if time() - start >= 10 and not timeout:
+                self.logger.error('await for confirmations more than 10s...')
+                timeout = True
         return self.__last_confirmation_time
 
     def confirm(self, recipient_id, request_id):

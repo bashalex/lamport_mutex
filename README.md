@@ -7,7 +7,7 @@ These directories must exist!_
 **Default:** ```./pids``` for daemons pids and ```./logs``` for logs
 ## Scripts: ##
 ### main.py: ###
-_Spawn new process in one of two modes: interactive or daemon_
+_Spawns new process in one of two modes: interactive or daemon_
 
 **Arguments:**
   * id (int) - id of new process
@@ -22,7 +22,7 @@ _Spawn new process in one of two modes: interactive or daemon_
 **Example:** ```./main.py 0 8800 "1, 2" "8801, 8802" mutex.txt false true false```
 
 ### daemons_master.py: ###
-_Allow to control spawned daemons_
+_Allows to control spawned daemons_
 
 **Arguments:**
   * command (kill | lock | unlock)
@@ -41,7 +41,7 @@ _Allow to control spawned daemons_
 ```./daemons_master.py unlock 0```
 
 ### stress_test.py: ###
-_Run stress test with ```n``` processes for ```s``` seconds_
+_Runs stress test with ```n``` processes for ```s``` seconds_
 
 _A lot of logger errors in the beginning of the test it's ok._
 _They happens while not all of processes are spawned_
@@ -56,7 +56,7 @@ _They happens while not all of processes are spawned_
 ### log_checker.py: ###
 
 _Run without arguments.
-Check correctness of logs_
+Checks correctness of logs_
 
 ## Tests ##
 **run unit tests:** ```python3 -W ignore -m unittest tests/test_API.py tests/test_mutex.py```
